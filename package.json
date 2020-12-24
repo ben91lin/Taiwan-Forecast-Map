@@ -1,0 +1,29 @@
+{
+  "name": "taiwan-forcast-map",
+  "version": "1.0.0",
+  "description": "A Project to Visualize Taiwan Forcast.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ben91lin/Taiwan-Forcast-Map.git"
+  },
+  "keywords": [
+    "Taiwan",
+    "Atlas",
+    "Forcast"
+  ],
+  "author": "ABen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ben91lin/Taiwan-Forcast-Map/issues"
+  },
+  "homepage": "https://github.com/ben91lin/Taiwan-Forcast-Map#readme",
+  "dependencies": {
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
+    "request": "^2.88.2"
+  }
+}

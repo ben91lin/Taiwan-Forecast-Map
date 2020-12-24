@@ -1,0 +1,6 @@
+test-*.js
+auth.js
+connect.js
+
+# Dependency directories
+node_modules/
