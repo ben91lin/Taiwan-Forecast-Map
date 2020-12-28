@@ -18,6 +18,9 @@ async function regularizeAtlas() {
                 let countycode = geometry.properties.COUNTYCODE.match(/[1-9]+/)[0]
 
                 geometry.properties.TOWNCODE = `${countycode}0${towncode}00`
+            } else {
+                let towncode = geometry.properties.TOWNCODE.slice(0, 7)
+                geometry.properties.TOWNCODE = towncode
             }
         }
 
