@@ -14,12 +14,10 @@ async function regularizeAtlas() {
             }
     
             if (geometry.properties.TOWNCODE.startsWith('6')) {
-                let [ countycode, towncode ] = geometry.properties.TOWNCODE.match(/[1-9]+/g) 
-                if (towncode.length == 1) {
-                    geometry.properties.TOWNCODE = `${countycode}00${towncode}00`
-                } else {
-                    geometry.properties.TOWNCODE = `${countycode}0${towncode}00`
-                }
+                let towncode = geometry.properties.TOWNCODE.slice(5, 7)
+                let countycode = geometry.properties.COUNTYCODE.match(/[1-9]+/)[0]
+
+                geometry.properties.TOWNCODE = `${countycode}0${towncode}00`
             }
         }
 
