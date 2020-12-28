@@ -23,8 +23,8 @@ class WeatherAPI {
         this.baseUrl = baseUrl;
         this.auth = auth;
         this.urls = [];
-        this.originalForcasts = [];
-        this.parsingForcasts = null;
+        this.originalForecasts = [];
+        this.parsingForecasts = null;
     }
 
     _request(url) {
@@ -38,7 +38,7 @@ class WeatherAPI {
                     const {records: {locations: [{location}]}} = JSON.parse(body);
 
                     for (let loc of location) {
-                        this.originalForcasts.push(loc)
+                        this.originalForecasts.push(loc)
                     }
                 }
 
@@ -48,23 +48,23 @@ class WeatherAPI {
     }
 
     _geocodeType() {
-        return this.originalForcasts[0].geocode.length === 7 ? 'townCode' : 'countyCode'
+        return this.originalForecasts[0].geocode.length === 7 ? 'townCode' : 'countyCode'
     }
 
     _weatherElementName() {
         var elementNames = []
-        for (var {elementName} of this.originalForcasts[0].weatherElement) {
+        for (var {elementName} of this.originalForecasts[0].weatherElement) {
             elementNames.push(elementName)
         }
         return elementNames
     }
 
     _weatherElementLength() {
-        return this.originalForcasts[0].weatherElement.length
+        return this.originalForecasts[0].weatherElement.length
     }
 
     _timeLength() {
-        return this.originalForcasts[0].weatherElement[0].time.length
+        return this.originalForecasts[0].weatherElement[0].time.length
     }
 
     createUrls(dataNames, format) {
@@ -85,13 +85,13 @@ class WeatherAPI {
         return this
     }
 
-    getForcasts() {
+    getForecasts() {
         return new Promise(async function(resolve) {
             for ( let url of this.urls ) {
                 await this._request(url)
             }
 
-            console.log(`已找到${this.originalForcasts.length}筆地點。`)
+            console.log(`已找到${this.originalForecasts.length}筆地點。`)
             resolve(this)
         }.bind(this))
     }
@@ -101,43 +101,43 @@ class WeatherAPI {
         const weatherElementName = this._weatherElementName()
         const weatherElementLength = this._weatherElementLength()
         const timeLength = this._timeLength()
-        var forcasts = {
+        var forecasts = {
             columns: [],
-            forcasts: []
+            forecasts: []
         }
 
-        forcasts.columns = forcasts.columns.concat(geocodeType, 'startTime', 'endTime', weatherElementName)
+        forecasts.columns = forecasts.columns.concat(geocodeType, 'startTime', 'endTime', weatherElementName)
 
-        for (let { geocode, weatherElement } of this.originalForcasts) {
+        for (let { geocode, weatherElement } of this.originalForecasts) {
             for (let i = 0; i < timeLength; i++) {
-                let forcast = [];
+                let forecast = [];
                 let startTime = weatherElement[0].time[i].startTime;
                 let endTime = weatherElement[0].time[i].endTime;
                 let value;
             
-                forcast.push(geocode)
-                forcast.push(startTime)
-                forcast.push(endTime)
+                forecast.push(geocode)
+                forecast.push(startTime)
+                forecast.push(endTime)
                 for (let j = 0; j < weatherElementLength; j++) {
                     value = weatherElement[j].elementName === 'CI' ? weatherElement[j].time[i].elementValue[1].value : weatherElement[j].time[i].elementValue[0].value;
                     if ( StringCheck.isSpace(value) ) {
-                        forcast.push(null)
+                        forecast.push(null)
                     } else {
-                        forcast.push(value)
+                        forecast.push(value)
                     }
                 }
-                forcasts.forcasts.push(forcast)
+                forecasts.forecasts.push(forecast)
             }
         }
 
-        this.parsingForcasts = forcasts
-        console.log(`已解析${this.parsingForcasts.forcasts.length}筆天氣預報。`)
+        this.parsingForecasts = forecasts
+        console.log(`已解析${this.parsingForecasts.forecasts.length}筆天氣預報。`)
         return this
     }
 
     insert(tableName) {
         return new Promise(async function(resolve) {
-            const query = `INSERT INTO ${tableName}(${this.parsingForcasts.columns.join()}) Values(${Array.from('?'.repeat(this.parsingForcasts.columns.length)).join(',')})`
+            const query = `INSERT INTO ${tableName}(${this.parsingForecasts.columns.join()}) Values(${Array.from('?'.repeat(this.parsingForecasts.columns.length)).join(',')})`
             var connection;
 
             try {
@@ -146,11 +146,11 @@ class WeatherAPI {
                 console.log('START TRANSACTION');
                 await connection.query(`TRUNCATE \`${tableName}\``)
                 console.log(`TRUNCATE ${tableName}`)
-                for ( let forcast of this.parsingForcasts.forcasts) {
-                    connection.query(query, forcast)
+                for ( let forecast of this.parsingForecasts.forecasts) {
+                    connection.query(query, forecast)
                 }
                 console.log(query)
-                console.log(`已存入${this.parsingForcasts.forcasts.length}筆天氣預報。`)
+                console.log(`已存入${this.parsingForecasts.forecasts.length}筆天氣預報。`)
                 await connection.commit();
                 console.log('COMMIT!');
             } catch (err) {
@@ -166,8 +166,8 @@ class WeatherAPI {
 
     reset () {
         this.urls = [];
-        this.originalForcasts = [];
-        this.parsingForcasts = null;
+        this.originalForecasts = [];
+        this.parsingForecasts = null;
         return this;
     }
 }

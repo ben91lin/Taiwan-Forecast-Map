@@ -1,0 +1,85 @@
+/**
+Breakpoints: sm-576px, md-768px, lg-992px, xl-1200px
+ */
+
+/* main */
+#taiwan-atlas {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(250, 250, 250);
+}
+
+.atlas-style,
+.atlas-style path {
+    fill: rgb(255, 255, 255);
+    stroke: rgb(50, 50, 50);
+    stroke-linejoin: round;
+}
+
+[class^="county"][class$="active"] path {
+    stroke: rgb(0, 170, 170);
+}
+
+[class^="town"] path {
+    stroke: rgb(0, 255, 255);
+}
+
+#ruler {
+    position: absolute;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    z-index: 1;
+    left: 1.5rem;
+    bottom: 1.5rem;
+}
+
+.ruler__color-scale,
+.ruler__scale-name {
+    position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    flex-direction: column-reverse;
+    justify-content: space-between;
+}
+
+.ruler__color-scale > div {
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+.ruler__scale-name {
+    margin-left: .5rem;
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+}
+
+.ruler__scale-name p {
+    font-size: 1.5rem;
+    line-height: 0;
+    vertical-align: baseline;
+}
+
+@media (min-width: 768px) {
+    .ruler__color-scale {
+        left: 2rem;
+        bottom: 2rem;
+    }
+
+    .ruler__color-scale > div {
+        height: 2rem;
+        width: 2rem;
+    }
+
+    .ruler__scale-name {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .ruler__scale-name p {
+        font-size: 2rem;
+    }
+}

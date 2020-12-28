@@ -1,0 +1,133 @@
+/**
+Breakpoints: sm-576px, md-768px, lg-992px, xl-1200px
+ */
+
+/* --------------------------------------------------
+>>> 1. Document Setup
+------------------------------------------------- */
+*,
+*::before,
+*::after {
+    -webkit-font-smoothing: antialiased;
+    word-break: break-word;
+    word-wrap: break-word;
+}
+
+html {
+    font-size: 56.25%;
+    /* 1rem = 9px */
+    line-height: 1.5;
+    scroll-behavior: smooth;
+}
+
+@media (min-width: 576px) {
+    html {
+        font-size: 62.5%;
+        /* 1rem = 10px */
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+body {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100vh;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    font-display: swap;
+    overflow: hidden;
+}
+
+main,
+aside {
+    display: flex;
+    flex-direction: column;
+    height: calc(100% - 1rem);
+    width: 100%;
+    margin: 0.5rem;
+    border: 1px solid rgb(230, 230, 230);
+    border-radius: 1rem;
+}
+
+main {
+    position: relative;
+    overflow: hidden;
+}
+
+aside {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, .8);
+    transition: left .3s linear;
+}
+
+aside.__active__ {
+    left: 0;
+}
+
+@media (min-width: 512px) {
+    aside {
+        width: 50%;
+    }
+
+    aside.__active__ {
+        left: 50%;
+    }
+}
+
+@media (min-width: 768px) {
+    main, 
+    aside {
+        position: relative;
+    }
+
+    main {
+        width: 66.6%;
+        margin: 0.5rem;
+    }
+
+    aside {
+        width: 33.6%;
+        top: auto;
+        left: auto;
+        margin: 0.5rem 0.5rem 0.5rem 0;
+        padding: 2rem;
+    }
+}
+
+@media (min-width: 992px) {
+    main,
+    aside {
+        height: calc(100% - 2rem);
+    }
+
+    main {
+        margin: 1rem;
+    }
+
+    aside {
+        margin: 1rem 1rem 1rem 0;
+    }
+}
+
+@media (min-width: 1600px) {
+    main {
+        width: 50%;
+    }
+
+    aside {
+        width: 25%;
+    }
+}

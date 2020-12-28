@@ -16,21 +16,21 @@ const formatPoP12h = '&format=JSON&elementName=PoP12h';
 
     console.log('更新開始。')
 
-    await weatherAPI.createUrls(counties48, format48).getForcasts();
+    await weatherAPI.createUrls(counties48, format48).getForecasts();
     await weatherAPI.parsing().insert('counties48');
-    await weatherAPI.reset().createUrls(counties48, formatPoP6h).getForcasts()
+    await weatherAPI.reset().createUrls(counties48, formatPoP6h).getForecasts()
     await weatherAPI.parsing().insert('counties48pop6h');
-    await weatherAPI.reset().createUrls(counties168, format168).getForcasts();
+    await weatherAPI.reset().createUrls(counties168, format168).getForecasts();
     await weatherAPI.parsing().insert('counties168');
-    await weatherAPI.reset().createUrls(counties168, formatPoP12h).getForcasts()
+    await weatherAPI.reset().createUrls(counties168, formatPoP12h).getForecasts()
     await weatherAPI.parsing().insert('counties168pop12h');
-    await weatherAPI.reset().createUrls(towns48, format48).getForcasts();
+    await weatherAPI.reset().createUrls(towns48, format48).getForecasts();
     await weatherAPI.parsing().insert('towns48');
-    await weatherAPI.reset().createUrls(towns48, formatPoP6h).getForcasts();
+    await weatherAPI.reset().createUrls(towns48, formatPoP6h).getForecasts();
     await weatherAPI.parsing().insert('towns48pop6h');
-    await weatherAPI.reset().createUrls(towns168, format168).getForcasts();
+    await weatherAPI.reset().createUrls(towns168, format168).getForecasts();
     await weatherAPI.parsing().insert('towns168');
-    await weatherAPI.reset().createUrls(towns168, formatPoP12h).getForcasts();
+    await weatherAPI.reset().createUrls(towns168, formatPoP12h).getForecasts();
     await weatherAPI.parsing().insert('towns168pop12h');
 
     console.log('更新完成。')

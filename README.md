@@ -1,14 +1,11 @@
-# Taiwan-Forcast-Map
+# Taiwan-Forecast-Map
 
-USE MySQL.
-
+## Create Database.
 ```bash
 mysql < weather_forecast_tw.sql
 ```
-
-Create Two Essential File.
-
-1. src/SQL/connect.js
+## Create Two Essential File.
+src/SQL/connect.js
 ```js
 const mysql = require('mysql2');
 
@@ -24,8 +21,8 @@ const pool = mysql.createPool({
 
 module.exports = pool.promise();
 ```
-2. src/SQL/auth.js
-   You should get auth from https://opendata.cwb.gov.tw/index.
+src/SQL/auth.js  
+You should get auth from https://opendata.cwb.gov.tw/index.
 ```js
 const auth = '<YOUR_AUTH>'
 

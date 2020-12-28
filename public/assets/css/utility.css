@@ -1,0 +1,11 @@
+.-d-flex {
+    display: flex;
+}
+
+.-f-jc-center {
+    justify-content: center;
+}
+
+.-f-ai-center {
+    align-items: center;
+}

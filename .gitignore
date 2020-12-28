@@ -1,6 +1,10 @@
+unit-*.js
 test-*.js
 auth.js
 connect.js
+
+# VSCode workspace
+*.code-workspace
 
 # Dependency directories
 node_modules/
