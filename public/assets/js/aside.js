@@ -114,9 +114,8 @@ class Aside {
     _switchRuler() {
         const forecasttype = this.controlPanel.forecasttype
         const blueScale = Object.values(this.color.blueIndex)
-        const red2blueScale = Object.values(this.color.red2blueIndex)
+        const red2blueScale = this.color.red2blueScale
 
-        console.log(blueScale)
         if (forecasttype === 'pop') {
             console.log('pop')
             d3.select('#ruler .ruler__color-scale')
@@ -129,15 +128,15 @@ class Aside {
             d3.select('#ruler .ruler__scale-name')
                 .selectAll('p')
                 .transition()
-                .duration(250)
+                .duration(100)
                 .style('opacity', 0)
 
             d3.select('#ruler .ruler__scale-name')
                 .selectAll('p')
                 .data(['0%', '20%', '40%', '60%', '80%', '100%'])
                 .transition()
-                .delay(250)
-                .duration(1000)
+                .delay(100)
+                .duration(500)
                 .style('opacity', 1)
                 .text((data) => data)
         } else {
@@ -152,15 +151,15 @@ class Aside {
             d3.select('#ruler .ruler__scale-name')
                 .selectAll('p')
                 .transition()
-                .duration(250)
+                .duration(100)
                 .style('opacity', 0)
 
             d3.select('#ruler .ruler__scale-name')
                 .selectAll('p')
                 .data(['<= 0', '8-12', '16-20', '24-28', '32-36', '> 40'])
                 .transition()
-                .delay(250)
-                .duration(1000)
+                .delay(100)
+                .duration(500)
                 .style('opacity', 1)
                 .text((data) => data)
         }

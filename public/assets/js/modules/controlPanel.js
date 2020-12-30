@@ -6,10 +6,23 @@ class ControlPanel {
     }
 
     _init() {
+        const datetime = new Date()
         this.temperature = this.controlPanel.querySelector('[value="temperature"]')
         this.pop = this.controlPanel.querySelector('[value="pop"]')
         this.dates = this.controlPanel.querySelectorAll('[class^="date"]')
         this.times = this.controlPanel.querySelectorAll('[name="time"]')
+        this.pop.checked = true
+        this.dates[0].checked = true
+        for (let i = 3; i < 7; i++) {
+            this.dates[i].disabled = true
+        }
+        if (datetime.getHours() > 12) {
+            this.times[1].checked = true
+            this.times[0].disabled = true
+        } else {
+            this.times[0].disabled = false
+            this.times[0].checked = true
+        }
     }
 
     refresh() {

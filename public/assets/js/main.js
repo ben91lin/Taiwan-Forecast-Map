@@ -66,7 +66,7 @@ class Main {
                     return new Promise(
                         function (resolve) {
                             this._fillColor(arr, rendering.county, this.color.blueIndex)
-                            resolve()
+                            // resolve()
                         }.bind(this)
                     )
                 }.bind(this)
@@ -309,9 +309,15 @@ class Main {
         }
     }
 
+    /**
+     * Fill Forecast Color
+     * @param {AJAX return} arr 
+     * @param {['number', 'number'...]} geocodes (Geocode wanted Rendered)
+     * @param {this.color .. index} color (color scale)
+     */
     _fillColor(arr, geocodes, color) {
         const forecasts = {}
-
+        
         for (let forecast of arr) {
             let values = Object.values(forecast)
             forecasts[values[0]] = values[1]
@@ -320,8 +326,10 @@ class Main {
         for (let geocode of geocodes) {
             try {
                 if (geocode.length <= 5) {
-                    this.atlas.Rendering[`county-${geocode}`]
-                        .style('fill', color[forecasts[geocode]])
+                    if (this.atlas.Rendering[`county-${geocode}`]) {
+                        this.atlas.Rendering[`county-${geocode}`]
+                            .style('fill', color[forecasts[geocode]])
+                    }
                 } else {
                     this.atlas.Rendering[`town-${geocode}-active`]
                         .style('fill', color[forecasts[geocode]])
@@ -330,6 +338,8 @@ class Main {
                 throw err
             }
         }
+
+        return Promise.resolve()
     }
 
     /**
