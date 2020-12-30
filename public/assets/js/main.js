@@ -1,8 +1,3 @@
-import regularizeAtlas from './modules/regularizeAtlas.js'
-import Atlas from './modules/atlas.js'
-import Forecast from './modules/forecast.js'
-
-
 /**
  * 
  * The Main-Object depend Atlas-Object and Forecast-Object.
@@ -10,15 +5,17 @@ import Forecast from './modules/forecast.js'
  * 
  */
 class Main {
-    constructor(atlas, forecast) {
+    constructor(atlas, controlPanel, forecast, color) {
         this.atlas = atlas
+        this.controlPanel = controlPanel
         this.forecast = forecast
+        this.color = color
         this._init()
     }
     
     _init() {
         // bind D3-callback
-        this.atlas.Rendered.svg.on('click', this._reset.bind(this))
+        this.atlas.RenderedGroup.svg.on('click', this._reset.bind(this))
             .on('dbclick', this._reset.bind(this))
         this.atlas.state.zoom.on('zoom', this._zoomed.bind(this))
 
@@ -39,123 +36,77 @@ class Main {
         }
         // Fetch
         const rendering = this._parseRendering()
-        const state = this.forecast.getState()
-        const color = this.forecast.color
-        const table = this._table(this._pluralGeotype(rendering[0].geotype), this._forecasttype(state.forecasttype))
-        const geocodes = rendering.map((x) => x.geocode)
-        console.log(rendering)
-        console.log(Object.values(rendering[0]).join('-'))
-        console.log(color.blueIndex['10'])
-        this.forecast.fetch(table, geocodes, 'countyCode, PoP12h')
-            .then(function (obj) {
-                console.log(obj)
-                const {pop12h} = obj
-                const geocodes = pop12h.map((obj) => obj.countyCode)
-                const pop = (function() {
-                    const output = {}
-                    for (let {countyCode, PoP12h} of pop12h) {
-                        output[countyCode] = PoP12h
-                    }
-                    return output
-                })()
-                console.log(geocodes)
-                console.log(pop)
-                for (let r of rendering) {
-                    let {geocode} = r
-                    console.log(geocode)
-                    console.log(this.atlas.getRendering())
-                    console.log(Object.values(r).join('-'))
-                    if (geocodes.includes(r.geocode)) {
-                        this.atlas.getRendering()[Object.values(r).join('-')]
-                        .style('fill', color.blueIndex[pop[geocode]])
-                    }
+        const forecasttype = this.controlPanel.forecasttype
+        const datetime = this.controlPanel.datetime
+        if (forecasttype === 'pop') {
+            let table = 'counties168pop12h'
+            let queryString = 'countyCode, PoP12h'
+
+            fetch(`/query/${table}/`, 
+                {
+                    method: 'POST',
+                    body: JSON.stringify(
+                        {
+                            geocodes: rendering.county,
+                            datetime: datetime,
+                            queryString: queryString
+                        }
+                    ),
+                    headers: new Headers(
+                            {
+                            'Content-Type': 'application/json'
+                            }
+                        )
                 }
-            }.bind(this))
-        
-        // Rendered
-        // for (let query of Object.keys(this.atlas.Rendering)) {
-        //     this.atlas.rendered(query)
-        // }
+            ).then(
+                function(res) {
+                    return res.json()
+                }
+            ).then(
+                function(arr) {
+                    return new Promise(
+                        function (resolve) {
+                            this._fillColor(arr, rendering.county, this.color.blueIndex)
+                            resolve()
+                        }.bind(this)
+                    )
+                }.bind(this)
+            ).then(
+                function() {
+                    for (let query of Object.keys(this.atlas.Rendering)) {
+                        this.atlas.rendered(query)
+                    }
+                }.bind(this)
+            )
+        }
     }
 
     refresh() {
         this.atlas.refresh()
-        this.forecast.refresh()
+        this.controlPanel.refresh()
         this._init()
     }
 
     /**
-     * Specific D3 Callback
+     * Parse County and TownActive 
      */
-    _reset() {
-        const svg = this.atlas.Rendered.svg
-        const state = this.atlas.state
-        const active = Object.keys(this.atlas.rendered).filter((str) => str.includes('active'))
-
-        svg.transition()
-            .duration(700)
-            .call(
-                state.zoom.transform,
-                d3.zoomIdentity,
-                d3.zoomTransform(svg.node())
-                    .invert([state.canvasWidth / 2, state.canvasHeight / 2 ])
-            )
-        //remove active atlas
-        for (let k of active) {
-            this._fadeOut(this.atlas.rendered[k])
-            this.atlas.remove(k)
-        }
-    }
-
-    /**
-     * Specific D3 Callback
-     */
-    _zoomed() {
-        const { transform } = d3.event
-        const g = this.atlas.Rendered.g
-        const activeCounty = Object.keys(this.atlas.Rendered).filter((str) => str.includes('active') && str.includes('county'))[0]
-
-        g.attr('transform', transform)
-            .attr('stroke-width', 0.5 / transform.k)
-        this.atlas.Rendered[activeCounty]
-            .attr('stroke-width', 4 / transform.k)
-    }
-
     _parseRendering() {
-        return Object.keys(this.atlas.Rendering).map(function(x) {
-            const arr = x.split('-')
-            const output = {}
+        const keys = Object.keys(this.atlas.Rendering)
+        const output = {
+            county: [],
+            town: []
+        }
 
-            output['geotype'] = arr[0]
-            output['geocode'] = arr[1]
-            if (arr[2]) {
-                output['state'] = arr[1]
+        for (let k of keys) {
+            let arr = k.split('-')
+            if (arr[0] === 'county') {
+                output.county.push(arr[1]) 
+            } else if (arr[0] === 'town') {
+                output.town.push(arr[1]) 
             }
-
-            return output
-        })
-    }
-
-    _pluralGeotype(geotype) {
-        if (!['county', 'town'].includes(geotype)) {
-            throw (`The geotype is wrong.`)
-        } else if (geotype === 'county') {
-            return 'counties'
-        } else {
-            return 'towns'
         }
-    }
 
-    _forecasttype(forecasttype) {
-        if (forecasttype == 'pop') {
-            return 'pop12h'
-        } else {
-            return ''
-        }
-    }
-
-    _table(geotype, forecasttype) {
-        return `${geotype}168${forecasttype}`
+        return output
     }
 
     /**
@@ -175,23 +126,29 @@ class Main {
         }
     }
 
+    /**
+     * click Callback
+     * @param {HTMLelement} HTMLelement 
+     * @param {this.atlas.atlas} atlas 
+     */
     _renderTowns(HTMLelement, atlas) {
         const that = this
         const state = this.atlas.state
-        const svg = this.atlas.Rendered.svg
+        const svg = this.atlas.RenderedGroup.svg
         const [[x0, y0], [x1, y1]] = state.geoPath.bounds(atlas)
         const scale = Math.min(8, 0.8 / Math.max((x1 - x0) / state.canvasWidth, (y1 - y0) / state.canvasHeight))
         const countycode = HTMLelement.getAttribute('countycode')
         const currentColor = HTMLelement.style.fill
         const countyAtlas = this.atlas.atlas.counties[countycode]
         const townsAtlas = Object.values(this.atlas.atlas.towns[countycode])
-        const active = Object.keys(this.atlas.Rendered).filter((str) => str.includes('active'))
-        console.log(active)
+        const active = Object.keys(this.atlas.RenderedGroup).filter((str) => str.includes('active'))
+
         //remove atlas
         for (let k of active) {
             this.atlas.fadeOut(k).remove(k)
         }
-        //render atlas
+
+        // Render county
         this.atlas.queuing(countyAtlas, 'active')
         for (let q of Object.keys(this.atlas.Queuing)) {
             this.atlas.rendering(q).fadeIn(q)
@@ -199,19 +156,104 @@ class Main {
                 .style('fill', currentColor)
             this.atlas.rendered(q)
         }
+        // Render towns
+        // Queuing
         for (let q of townsAtlas) {
             this.atlas.queuing(q, 'active')
         }
-        for (let q of Object.keys(this.atlas.Queuing)) {
-            this.atlas.rendering(q).fadeIn(q)
-            this.atlas.Rendering[q]
-                .on('click', function() {
-                    that._click(this)
+        // Rendering
+        for (let query of Object.keys(this.atlas.Queuing)) {
+            this.atlas.rendering(query).fadeIn(query)
+            this.atlas.Rendering[query]
+                .on('click', function(atlas) {
+                    that._click(this, atlas)
                 })
-            this.atlas.rendered(q)
         }
-        this.atlas
+        // Fetch
+        const rendering = this._parseRendering()
+        const forecasttype = this.controlPanel.forecasttype
+        const datetime = this.controlPanel.datetime
+        if (forecasttype === 'pop') {
+            let table = 'towns168pop12h'
+            let queryString = 'townCode, PoP12h'
 
+            fetch(`/query/${table}/`, 
+                {
+                    method: 'POST',
+                    body: JSON.stringify(
+                        {
+                            geocodes: rendering.town,
+                            datetime: datetime,
+                            queryString: queryString
+                        }
+                    ),
+                    headers: new Headers(
+                            {
+                            'Content-Type': 'application/json'
+                            }
+                        )
+                }
+            ).then(
+                function(res) {
+                    return res.json()
+                }
+            ).then(
+                function(arr) {
+                    return new Promise(
+                        function (resolve) {
+                            this._fillColor(arr, rendering.town, this.color.blueIndex)
+                            resolve()
+                        }.bind(this)
+                    )
+                }.bind(this)
+            ).then(
+                function() {
+                    for (let query of Object.keys(this.atlas.Rendering)) {
+                        this.atlas.rendered(query)
+                    }
+                }.bind(this)
+            )
+        } else {
+            let table = 'towns168'
+            let queryString = 'townCode, T'
+
+            fetch(`/query/${table}/`, 
+                {
+                    method: 'POST',
+                    body: JSON.stringify(
+                        {
+                            geocodes: rendering.town,
+                            datetime: datetime,
+                            queryString: queryString
+                        }
+                    ),
+                    headers: new Headers(
+                            {
+                            'Content-Type': 'application/json'
+                            }
+                        )
+                }
+            ).then(
+                function(res) {
+                    return res.json()
+                }
+            ).then(
+                function(arr) {
+                    return new Promise(
+                        function (resolve) {
+                            this._fillColor(arr, rendering.town, this.color.red2blueIndex)
+                            resolve()
+                        }.bind(this)
+                    )
+                }.bind(this)
+            ).then(
+                function() {
+                    for (let query of Object.keys(this.atlas.Rendering)) {
+                        this.atlas.rendered(query)
+                    }
+                }.bind(this)
+            )
+        }
         
         svg.transition()
             .duration(750)
@@ -225,21 +267,35 @@ class Main {
             )
     }
 
+    /**
+     * click Callback
+     * @param {HTMLelement} HTMLelement 
+     * @param {this.atlas.atlas} atlas 
+     */
     _renderTown(HTMLelement) {
         const countycode = HTMLelement.getAttribute('countycode')
         const towncode = HTMLelement.getAttribute('towncode')
         const currentColor = HTMLelement.style.fill
         const townAtlas = this.atlas.atlas.towns[countycode][towncode]
-        const brighterAtlas = this.atlas.Rendered[Object.keys(this.atlas.Rendered).filter((str) => str.includes(towncode))]
-        const brighterAactive = Object.keys(this.atlas.Rendered).filter((str) => str.includes('active') && str.includes('brighter'))
+        const brighterActive = Object.keys(this.atlas.RenderedPath).filter((str) => str.includes('active') && str.includes('brighter'))
         //remove atlas
-        for (let k of brighterAactive) {
+        for (let k of brighterActive) {
             this.atlas.fadeOut(k).remove(k)
         }
-        //brighter atlas
-        brighterAtlas.style('fill', d3.rgb(currentColor).brighter(2))
-        //render new town atlas
-        this.atlas.queuing(townAtlas, 'brighteractive')
+        // render new brighter town atlas
+        this.atlas.queuing(townAtlas, 'brighteractivedown')
+        for (let q of Object.keys(this.atlas.Queuing)) {
+            this.atlas.rendering(q)
+            this.atlas.Rendering[q]
+                .style('fill', d3.rgb(currentColor).brighter(2))
+                .style('opacity', 0)
+                .transition()
+                .duration(750)
+                .style('opacity', 1)
+            this.atlas.rendered(q)
+        }
+        // render new upper town atlas
+        this.atlas.queuing(townAtlas, 'brighteractiveupper')
         for (let q of Object.keys(this.atlas.Queuing)) {
             this.atlas.rendering(q)
             this.atlas.Rendering[q]
@@ -252,37 +308,67 @@ class Main {
                 .style('transform', 'translateY(-1px)')
             this.atlas.rendered(q)
         }
+    }
 
+    _fillColor(arr, geocodes, color) {
+        const forecasts = {}
+
+        for (let forecast of arr) {
+            let values = Object.values(forecast)
+            forecasts[values[0]] = values[1]
+        }
+        
+        for (let geocode of geocodes) {
+            try {
+                if (geocode.length <= 5) {
+                    this.atlas.Rendering[`county-${geocode}`]
+                        .style('fill', color[forecasts[geocode]])
+                } else {
+                    this.atlas.Rendering[`town-${geocode}-active`]
+                        .style('fill', color[forecasts[geocode]])
+                }  
+            } catch (err) {
+                throw err
+            }
+        }
+    }
+
+    /**
+     * Specific D3 Callback
+     */
+    _reset() {
+        const svg = this.atlas.RenderedGroup.svg
+        const state = this.atlas.state
+        const active = Object.keys(this.atlas.RenderedGroup).filter((str) => str.includes('active'))
+
+        svg.transition()
+            .duration(700)
+            .call(
+                state.zoom.transform,
+                d3.zoomIdentity,
+                d3.zoomTransform(svg.node())
+                    .invert([state.canvasWidth / 2, state.canvasHeight / 2 ])
+            )
+        //remove active atlas
+        for (let k of active) {
+            this.atlas.fadeOut(k).remove(k)
+        }
+    }
+
+    /**
+     * Specific D3 Callback
+     */
+    _zoomed() {
+        const { transform } = d3.event
+        const g = this.atlas.RenderedGroup.g
+        const activeCounty = d3.select('[class*="county"][class*="active"]')
+
+        g.attr('transform', transform)
+            .attr('stroke-width', 0.5 / transform.k)
+        // zoom will catch D3-Object in animation, but the Atlas.remove first, so we use new D3.Select
+        // TODO: Or we can add Promise in fadeIn/fadeOut
+        activeCounty.attr('stroke-width', 4 / transform.k)
     }
 }
 
-(async function() {
-    const geoJson = await regularizeAtlas()
-    console.log(geoJson)
-    const atlas = new Atlas(geoJson, document.querySelector('#taiwan-atlas'))
-    console.log(atlas)
-    const forecast = new Forecast()
-    const main = new Main(atlas, forecast)
-    console.log(main)
-
-    window.addEventListener('resize', function() {
-        for (let k of Object.keys(main.atlas.Rendered)) {
-            main.atlas.fadeOut(k, 0).remove(k)
-        }
-        main.refresh()
-        // console.log(main.atlas)
-
-    })
-    
-
-    // for (let alta of Object.values(main.atlas.counties)) {
-    //     main.draw(alta, 'county')
-    // }
-
-    
-    // const towns = Object.values(main.atlas.towns).flatMap(x => Object.values(x))
-    // console.log(towns)
-    // main.draw(towns, 'town')
-
-
-})()
+export default Main

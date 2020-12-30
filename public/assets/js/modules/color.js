@@ -2,7 +2,6 @@ function blueIndex(iterTimes) {
     const blueScale = {}
     for (let i = 0; i < iterTimes; i++) {
         let interpolate = Math.floor(100 / (iterTimes - 1)) * i / 100
-        console.log(interpolate)
         blueScale[i * 10] = d3.interpolateBlues(interpolate)
     }
     return blueScale
@@ -10,9 +9,9 @@ function blueIndex(iterTimes) {
 
 function red2blueIndex(iterTimes) {
     const red2BlueScale = {}
-    for (let i = 0; i < iterTimes; i++) {
-        let interpolate = Math.floor(100 / (iterTimes - 1)) * i / 100
-        red2BlueScale[`${i * 4}-${(i + 1) * 4}`] = d3.interpolateRdYlBu(interpolate)
+    for (let i = 0; i < iterTimes * 4; i++) {
+        let interpolate = 1 - (Math.floor(100 / (iterTimes - 1)) * i / 4 / 100)
+        red2BlueScale[i] = d3.interpolateRdYlBu(interpolate)
     }
     return red2BlueScale
 }

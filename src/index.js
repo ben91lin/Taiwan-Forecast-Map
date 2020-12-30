@@ -1,8 +1,6 @@
 const express = require('express');
 const app = express();
 const promisePool = require(`${__dirname}/SQL/connect`);
-// const parseQuery = require(`${__dirname}/modules/parseQuery`)
-
 
 app.set('view engine', 'ejs');
 app.use(express.json());
@@ -26,16 +24,16 @@ app.post('/query/:table', async function(req, res, next) {
     if (table.includes('pop')) {
         try {
             let [pop12h, _] = await promisePool.query(sql, [geocodes, datetime])
-    
-            return res.json({ pop12h: pop12h })
+
+            return res.json(pop12h)
         } catch(err) {
             throw err
         }
     } else {
         try {
-            let [forecast, _] = await promisePool.query(sql, [geocodes, time])
+            let [forecast, _] = await promisePool.query(sql, [geocodes, datetime])
 
-            return res.json({ forecast: forecast })
+            return res.json(forecast)
         } catch(err) {
             throw err
         }

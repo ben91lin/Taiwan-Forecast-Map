@@ -9,8 +9,8 @@
  * 
  * The 'Atlas' Rendering Step by Step.
  * 1. First, the 'Atlas-geo-json' will add to 'Queuing-Object'.
- * 2. Second, When 'Atlas' Rendering, the 'D3-Object' will add to 'Rendered-Object', the 'Atlas-geo-json' will be removed from 'Queuing-Object'.
- * 3. Third, When 'Atlas' Unrendering, the 'D3-Object' will be removed from 'Rendered-Object'.
+ * 2. Second, When 'Atlas' Rendering, the 'D3-Object' will add to 'RenderedGroup-Object' and 'RenderedPath-Object', the 'Atlas-geo-json' will be removed from 'Queuing-Object'.
+ * 3. Third, When 'Atlas' Unrendering, the 'D3-Object' will be removed from 'RenderedGroup-Object' and 'RenderedPath-Object'.
  * 
  */
 class Atlas {
@@ -19,7 +19,9 @@ class Atlas {
         this.state = {
             canvas: HTMLelement
         }
-        this.Rendered = {}
+        // Cause D3 use selectAll Method, the rendered should be contained <g> and <path> D3-Object.
+        this.RenderedGroup = {}
+        this.RenderedPath = {}
         this.Rendering = {}
         this.Queuing = {}
 
@@ -39,12 +41,12 @@ class Atlas {
         this.state['projection'] = this._projection(this.state['canvasWidth'], this.state['canvasHeight'])
         this.state['geoPath'] = d3.geoPath().projection(this.state['projection'])
         this.state['zoom'] = d3.zoom().scaleExtent([1, 8])
-        this.Rendered['svg'] = d3.select(canvas)
+        this.RenderedGroup['svg'] = d3.select(canvas)
             .append('svg')
             .attr('width', this.state['canvasWidth'])
             .attr('height', this.state['canvasHeight'])
             .attr('viewBox', [0, 0, this.state['canvasWidth'], this.state['canvasHeight']])
-        this.Rendered['g'] = this.Rendered['svg'].append('g')
+        this.RenderedGroup['g'] = this.RenderedGroup['svg'].append('g')
             .attr('stroke-width', .5)
             .attr('cursor', 'pointer')
     }
@@ -79,7 +81,7 @@ class Atlas {
     }
 
     getRendered() {
-        return this.Rendered
+        return this.RenderedPath
     }
 
     getState() {
@@ -125,17 +127,18 @@ class Atlas {
         if (!this.Queuing[query]) {
             return console.log(`[WARNING]${query} is not exist in Queuing.`)
         }
-        if (this.Rendered[query]) {
+        if (this.RenderedPath[query]) {
             return console.log(`[WARNING]${query} is Rendered, please set other query-name.`)
         }
         const atlas = Array.isArray(this.Queuing[query]) ? this.Queuing[query] : Array.of(this.Queuing[query])
-        const g = this.Rendered.g
+        const g = this.RenderedGroup.g
         const geoPath = this.state.geoPath
 
         // Prevent Wrong Atlas Structure.
         try {
-            this.Rendering[query] = g
+            this.RenderedGroup[query] = g
                 .append('g')
+            this.Rendering[query] = this.RenderedGroup[query]
                 .attr('class', query)
                 .selectAll('path')
                 .data(atlas)
@@ -171,7 +174,7 @@ class Atlas {
             return console.log(`[WARNING]${query} is not exist in Rendering.`)
         }
         try {
-            this.Rendered[query] = d3.select(`.${query}`)
+            this.RenderedPath[query] = this.Rendering[query]
             delete this.Rendering[query]
         } catch(err) {
             throw err
@@ -183,11 +186,12 @@ class Atlas {
      * @param {String} query 
      */
     remove(query) {
-        if (!this.Rendered[query]) {
-            return console.log(`[WARNING]${query} is not exist in Rendered.`)
+        if (!this.RenderedPath[query] && !this.RenderedGroup[query]) {
+            return console.log(`[WARNING]${query} is not exist in RenderedPath or RenderedGroup.`)
         }
         try {
-            delete this.Rendered[query]
+            delete this.RenderedGroup[query]
+            delete this.RenderedPath[query]
         } catch(err) {
             throw err
         }
@@ -217,10 +221,10 @@ class Atlas {
      * @param {Number} duration 
      */
     fadeOut(query, duration = 700) {
-        if (!this.Rendered[query]) {
+        if (!this.RenderedGroup[query]) {
             return console.log(`[WARNING]${query} is not exist in Rendering.`)
         }
-        this.Rendered[query]
+        this.RenderedGroup[query]
             .data([])
             .exit()
             .style('opacity', 1)
