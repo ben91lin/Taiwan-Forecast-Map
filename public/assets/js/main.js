@@ -5,10 +5,9 @@
  * 
  */
 class Main {
-    constructor(atlas, controlPanel, forecast, color) {
+    constructor(atlas, controlPanel, color) {
         this.atlas = atlas
         this.controlPanel = controlPanel
-        this.forecast = forecast
         this.color = color
         this._init()
     }

@@ -4,9 +4,8 @@ class Aside {
      * @param {main.this.atlas} atlas 
      * @param {main.this.forecast } forecast 
      */
-    constructor(atlas, controlPanel, forecast, color) {
+    constructor(atlas, controlPanel, color) {
         this.atlas = atlas
-        this.forecast = forecast
         this.controlPanel = controlPanel
         this.color = color
         this._init()

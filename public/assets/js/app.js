@@ -1,6 +1,5 @@
 import regularizeAtlas from './modules/regularizeAtlas.js'
 import Atlas from './modules/atlas.js'
-import Forecast from './modules/forecast.js'
 import ControlPanel from './modules/controlPanel.js'
 import color from './modules/color.js'
 import Main from './main.js'
@@ -12,10 +11,9 @@ import Aside from './aside.js'
     const atlas = new Atlas(geoJson, document.querySelector('#taiwan-atlas'))
     console.log(atlas)
     const controlPanel = new ControlPanel()
-    const forecast = new Forecast()
-    const main = new Main(atlas, controlPanel, forecast, color)
+    const main = new Main(atlas, controlPanel, color)
     console.log(main)
-    const aside = new Aside(atlas, controlPanel, forecast, color)
+    const aside = new Aside(atlas, controlPanel, color)
 
     window.addEventListener('resize', function() {
         for (let k of Object.keys(main.atlas.RenderedGroup)) {
