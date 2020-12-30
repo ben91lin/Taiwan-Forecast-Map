@@ -1,0 +1,48 @@
+.-switch-radio {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.-switch-radio input[type="radio"] {
+    display: none;
+}
+
+.-switch-radio label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: calc( 50% - 0.4em );
+    padding: 1rem;
+    margin: 0.2rem;
+    border-radius : 0.2rem;
+    cursor: pointer;
+    background-color: #ffffff;
+    color: rgb(0, 170, 170);
+    transition: background-color .4s linear, color .2s linear;
+}
+
+@media ( min-width: 992px ) {
+    .-switch-radio label {
+        width: calc( 25% - 0.4rem );
+    }
+    .-switch-radio.time label,
+    .-switch-radio.forecast-type label {
+        width: calc( 50% - 0.4rem );
+    }
+}
+
+/* checked label */
+.-switch-radio input[type="radio"]:disabled + label {
+    background-color: rgb(225, 225, 225);
+    color: rgb(25, 25, 25);
+    cursor: auto;
+}
+
+.-switch-radio input[type="radio"]:checked + label {
+    background-color: rgb(0, 170, 170);
+    color: #ffffff;
+}
+
+.-switch-radio input[type="radio"]:not(:checked):not(:disabled) + label {
+    border: solid .1rem rgb(225, 225, 225);
+}
