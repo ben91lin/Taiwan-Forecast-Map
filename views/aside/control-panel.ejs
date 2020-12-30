@@ -6,10 +6,11 @@ function dateOption(datetime) {
     for (let i = 0; i < 7; i++) {
         let year = datetime.getFullYear()
         let month = datetime.getMonth() + 1 > 10 ? datetime.getMonth() + 1 : `0${datetime.getMonth() + 1}`
-        let date = datetime.getDate() + i
+        let date = datetime.getDate()
         let checked = i === 0 ? 'checked' : ''
         let disabled = i > 2 ? 'disabled' : ''
-        output += `<label>\n${month}/${date}\n<input class="${date}" value="${year}-${month}-${date}" type="radio" name="date" ${checked}${disabled}>\n</label>\n`
+        output += `<input id="${date}" class="date-${month}-${date}" value="${year}-${month}-${date}" type="radio" name="date" ${checked}${disabled}>\n<label for="${date}">${month}/${date}</label>\n`
+        datetime.setDate(datetime.getDate() + 1)
     }
     return output
 }
@@ -18,26 +19,22 @@ function timeOption(datetime) {
     const dayState = hour < 12 ? 'checked' : 'disabled'
     const nightState = hour > 12 ? 'checked' : ''
 
-    return `<label>\n白天\n<input class="[ day ]" value="06:00:00" type="radio" name="time" ${dayState}>\n</label>\n<label>\n晚上\n<input class="[ night ]" value="18:00:00" type="radio" name="time" ${nightState}>\n</label>`
+    return `<input id="day" class="[ day ]" value="06:00:00" type="radio" name="time" ${dayState}>\n<label for="day">白天</label>\n<input id="night" class="[ night ]" value="18:00:00" type="radio" name="time" ${nightState}>\n<label for="night">晚上</label>`
 }
 %>
 <div id="control-panel">
     <form action="">
-        <div class="[ forecast-type ]">
-            <label>
-                降雨率
-                <input value="pop" type="radio" name="forecast-type" checked>
-            </label>
-            <label>
-                溫度
-                <input value="temperature" type="radio">
-            </label>
+        <div class="[ forecast-type ] -switch-radio">
+            <input id="pop" value="pop" type="radio" name="forecast-type" checked>
+            <label for="pop">降雨率</label>
+            <input id="temperature"  value="temperature" name="forecast-type" type="radio">
+            <label for="temperature">溫度</label>
         </div>
-        <div class="[ date ]">
+        <div class="[ date ] -switch-radio">
             <%- dateOption(datetime) %>
         </div>
 
-        <div class="[ time ]">
+        <div class="[ time ] -switch-radio">
             <%- timeOption(datetime) %>
         </div>
     </form>
