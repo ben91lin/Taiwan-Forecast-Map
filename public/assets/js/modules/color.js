@@ -16,9 +16,24 @@ function red2blueIndex(iterTimes) {
     return red2BlueScale
 }
 
+/**
+ * 11 COlor Scale For Ruler
+ * @param {red2blueIndex(11)} red2blueIndex11 
+ */
+function red2blueScale(red2blueIndex11) {
+    const R2BScale = []
+    for (let i = 0; i < Object.values(red2blueIndex11).length; i++) {
+        if (i % 4 == 0) {
+            R2BScale.push(Object.values(red2blueIndex11)[i])
+        }
+    }
+    return R2BScale
+}
+
 const color = {
     blueIndex: blueIndex(11),
-    red2blueIndex: red2blueIndex(11)
+    red2blueIndex: red2blueIndex(11),
+    red2blueScale: red2blueScale(red2blueIndex(11))
 }
 
 export default color
