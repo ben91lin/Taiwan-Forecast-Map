@@ -1,5 +1,7 @@
 # Taiwan-Forecast-Map
 
+The atlas is from https://github.com/dkaoster/taiwan-atlas
+
 ## Create Database.
 ```bash
 mysql < weather_forecast_tw.sql
