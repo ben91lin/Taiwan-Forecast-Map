@@ -41,10 +41,6 @@ aside > * {
         top: auto;
         right: auto;
     }
-
-    #control-panel .switch-radio label {
-        padding: 1rem;
-    }
 }
 
 #control-panel > * {
