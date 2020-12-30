@@ -64,10 +64,6 @@ Breakpoints: sm-576px, md-768px, lg-992px, xl-1200px
 }
 
 @media (min-width: 768px) {
-    .ruler__color-scale {
-        left: 2rem;
-        bottom: 2rem;
-    }
 
     .ruler__color-scale > div {
         height: 2rem;
