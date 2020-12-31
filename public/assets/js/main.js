@@ -78,6 +78,13 @@ class Main {
                 }.bind(this)
             )
         }
+
+        // Remove ControlPanel text
+        d3.select('#forecast')
+            .selectAll('p')
+            .data([])
+            .exit()
+            .remove()
     }
 
     refresh() {
@@ -137,6 +144,7 @@ class Main {
         const [[x0, y0], [x1, y1]] = state.geoPath.bounds(atlas)
         const scale = Math.min(8, 0.8 / Math.max((x1 - x0) / state.canvasWidth, (y1 - y0) / state.canvasHeight))
         const countycode = HTMLelement.getAttribute('countycode')
+        const countyname = HTMLelement.getAttribute('countyname')
         const currentColor = HTMLelement.style.fill
         const countyAtlas = this.atlas.atlas.counties[countycode]
         const townsAtlas = Object.values(this.atlas.atlas.towns[countycode])
@@ -253,6 +261,70 @@ class Main {
                 }.bind(this)
             )
         }
+
+        // Render Control Panel
+        Promise.all(
+            [
+                fetch(`/query/counties168pop12h/`, 
+                    {
+                        method: 'POST',
+                        body: JSON.stringify(
+                            {
+                                geocodes: countycode,
+                                datetime: datetime,
+                                queryString: 'PoP12h'
+                            }
+                        ),
+                        headers: new Headers(
+                                {
+                                'Content-Type': 'application/json'
+                                }
+                            )
+                    }
+                ).then(
+                    function(res) {
+                        return res.json()
+                    }
+                ),
+                fetch(`/query/counties168/`, 
+                    {
+                        method: 'POST',
+                        body: JSON.stringify(
+                            {
+                                geocodes: countycode,
+                                datetime: datetime,
+                                queryString: 'Wx, MinT, MaxT, MinAT, MaxAT, RH'
+                            }
+                        ),
+                        headers: new Headers(
+                                {
+                                'Content-Type': 'application/json'
+                                }
+                            )
+                    }
+                ).then(
+                    function(res) {
+                        return res.json()
+                    }
+                )
+            ]
+        ).then(
+            // [[{}], [{}]]
+            function(arrayOfArray) {
+                const forecast = {}
+                var keys = []
+                var values = []
+                for (let arr of arrayOfArray) {
+                    keys = keys.concat(Object.keys(arr[0]))
+                    values = values.concat(Object.values(arr[0]))
+                }
+                for (let i = 0; i < keys.length; i++) {
+                    forecast[keys[i]] = values[i]
+                }
+                
+                this._renderForecast(forecast, countyname)
+            }.bind(this)
+        )
         
         svg.transition()
             .duration(750)
@@ -274,6 +346,9 @@ class Main {
     _renderTown(HTMLelement) {
         const countycode = HTMLelement.getAttribute('countycode')
         const towncode = HTMLelement.getAttribute('towncode')
+        const countyname = HTMLelement.getAttribute('countyname')
+        const townname = HTMLelement.getAttribute('townname')
+        const datetime = this.controlPanel.datetime
         const currentColor = HTMLelement.style.fill
         const townAtlas = this.atlas.atlas.towns[countycode][towncode]
         const brighterActive = Object.keys(this.atlas.RenderedPath).filter((str) => str.includes('active') && str.includes('brighter'))
@@ -307,6 +382,70 @@ class Main {
                 .style('transform', 'translateY(-1px)')
             this.atlas.rendered(q)
         }
+
+        // Render Control Panel
+        Promise.all(
+            [
+                fetch(`/query/towns168pop12h/`, 
+                    {
+                        method: 'POST',
+                        body: JSON.stringify(
+                            {
+                                geocodes: towncode,
+                                datetime: datetime,
+                                queryString: 'PoP12h'
+                            }
+                        ),
+                        headers: new Headers(
+                                {
+                                'Content-Type': 'application/json'
+                                }
+                            )
+                    }
+                ).then(
+                    function(res) {
+                        return res.json()
+                    }
+                ),
+                fetch(`/query/towns168/`, 
+                    {
+                        method: 'POST',
+                        body: JSON.stringify(
+                            {
+                                geocodes: towncode,
+                                datetime: datetime,
+                                queryString: 'Wx, MinT, MaxT, MinAT, MaxAT, RH'
+                            }
+                        ),
+                        headers: new Headers(
+                                {
+                                'Content-Type': 'application/json'
+                                }
+                            )
+                    }
+                ).then(
+                    function(res) {
+                        return res.json()
+                    }
+                )
+            ]
+        ).then(
+            // [[{}], [{}]]
+            function(arrayOfArray) {
+                const forecast = {}
+                var keys = []
+                var values = []
+                for (let arr of arrayOfArray) {
+                    keys = keys.concat(Object.keys(arr[0]))
+                    values = values.concat(Object.values(arr[0]))
+                }
+                for (let i = 0; i < keys.length; i++) {
+                    forecast[keys[i]] = values[i]
+                }
+                
+                this._renderForecast(forecast, `${countyname} ${townname}`)
+            }.bind(this)
+        )
     }
 
     /**
@@ -340,6 +479,46 @@ class Main {
         }
 
         return Promise.resolve()
+    }
+
+    /**
+     * Render Forecast to ControlPanel
+     */
+    _renderForecast(forecast, geoName) {
+        const datas = [
+            geoName,
+            `溫度: ${forecast.MinT} ~ ${forecast.MaxT} °C`,
+            `體感溫度: ${forecast.MinAT} ~ ${forecast.MaxAT} °C`,
+            `相對溼度: ${forecast.RH}`,
+            `降雨率: ${forecast.PoP12h} %`
+        ]
+
+        // If Forecast not yet Rendered.
+        if( ! document.querySelector('#forecast p') ) {
+            d3.select('#forecast')
+                .selectAll('p')
+                .data(datas)
+                .enter()
+                .append('p')
+                .text((data) => data)
+                .style('opacity', 0)
+                .transition()
+                .duration(500)
+                .style('opacity', 1)
+        } else {
+            d3.select('#forecast')
+                .selectAll('p')
+                .data([])
+                .exit()
+                .remove()
+    
+            d3.select('#forecast')
+                .selectAll('p')
+                .data(datas)
+                .enter()
+                .append('p')
+                .text((data) => data)
+        }
     }
 
     /**
