@@ -30,5 +30,5 @@ const auth = '<YOUR_AUTH>'
 
 module.exports = auth
 ```
-
+TODO: RWD ControlPanel
     
